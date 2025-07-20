@@ -2,9 +2,8 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-local baseBlockName = "BaseBlock" -- Cambia esto al nombre exacto del bloqueo base
+local baseBlockName = "BaseBlock" -- Cambia al nombre real
 
--- Crear GUI
 local ScreenGui = Instance.new("ScreenGui", PlayerGui)
 ScreenGui.Name = "TPBlockMenu"
 
@@ -39,14 +38,39 @@ TeleportButton.TextSize = 20
 local cornerBtn = Instance.new("UICorner", TeleportButton)
 cornerBtn.CornerRadius = UDim.new(0, 10)
 
+local function findBaseBlock()
+    local obj = workspace:FindFirstChild(baseBlockName)
+    if obj then
+        if obj:IsA("BasePart") then
+            return obj.CFrame
+        elseif obj:IsA("Model") and obj.PrimaryPart then
+            return obj.PrimaryPart.CFrame
+        else
+            warn("El objeto encontrado no es BasePart ni Modelo con PrimaryPart")
+            return nil
+        end
+    else
+        warn("No se encontró el objeto con nombre: " .. baseBlockName)
+        return nil
+    end
+end
+
 TeleportButton.MouseButton1Click:Connect(function()
     local char = LocalPlayer.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        local bloque = workspace:FindFirstChild(baseBlockName)
-        if bloque and bloque:IsA("BasePart") then
-            char.HumanoidRootPart.CFrame = bloque.CFrame + Vector3.new(0,5,0)
-        else
-            warn("No se encontró el objeto de bloqueo base con nombre: "..baseBlockName)
-        end
+    if not char then
+        warn("Tu personaje no está cargado")
+        return
+    end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then
+        warn("No se encontró HumanoidRootPart")
+        return
+    end
+
+    local cf = findBaseBlock()
+    if cf then
+        hrp.CFrame = cf + Vector3.new(0,5,0)
+    else
+        warn("No se pudo obtener la posición para teleportar")
     end
 end)
